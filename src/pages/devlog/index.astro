@@ -1,0 +1,122 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import Header from '../../components/Header.astro';
+import { SITE_TITLE } from '../../consts';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const pageTitle = `Devlog — ${SITE_TITLE}`;
+const pageDescription = 'Stories from the trenches: development breakdowns, technical learnings, and process retrospectives.';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead title={pageTitle} description={pageDescription} />
+  </head>
+  <body>
+    <Header />
+    <main>
+      <section class="devlog-hero surface">
+        <div class="section-heading">
+          <span>Devlog</span>
+          <h1>Process over polish.</h1>
+        </div>
+        <p class="lede">
+          Regular updates that dig into prototyping discoveries, production learnings, and the tooling that keeps projects shipping.
+        </p>
+      </section>
+
+      <section class="devlog-feed">
+        <ul>
+          {posts.map((post) => (
+            <li>
+              <a href={`/devlog/${post.id}/`} class="devlog-card surface">
+                <div class="devlog-card__meta">
+                  <span class="pill">Update</span>
+                  <FormattedDate date={post.data.pubDate} />
+                </div>
+                <h2>{post.data.title}</h2>
+                <p>{post.data.description}</p>
+                <span class="devlog-card__cta">Read entry →</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .devlog-hero {
+    margin-top: 2.5rem;
+    margin-bottom: 3rem;
+    padding: 3rem;
+    background: linear-gradient(145deg, rgba(190, 242, 100, 0.16), rgba(30, 30, 30, 0.92));
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .devlog-hero .lede {
+    margin: 0;
+    max-width: 720px;
+    color: rgba(234, 234, 234, 0.9);
+    font-size: 1.05rem;
+  }
+  .devlog-feed ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.5rem;
+  }
+  .devlog-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 2.25rem;
+    background: rgba(30, 30, 30, 0.95);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: transform 0.2s ease, border 0.2s ease;
+    color: inherit;
+  }
+  .devlog-card:hover,
+  .devlog-card:focus {
+    transform: translateY(-4px);
+    border-color: rgba(190, 242, 100, 0.35);
+  }
+  .devlog-card__meta {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+  }
+  .devlog-card__cta {
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  @media (max-width: 960px) {
+    .devlog-hero {
+      padding: 2.5rem;
+    }
+  }
+  @media (max-width: 640px) {
+    .devlog-hero {
+      padding: 2rem;
+    }
+    .devlog-card {
+      padding: 2rem 1.75rem;
+    }
+  }
+</style>

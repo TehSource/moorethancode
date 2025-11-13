@@ -1,8 +1,20 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
+import ProjectCard from '../components/ProjectCard.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const projects = (await getCollection('projects'))
+  .sort((a, b) => a.data.order - b.data.order)
+  .filter((project) => project.data.featured)
+  .slice(0, 4);
+
+const devlogEntries = (await getCollection('blog'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 2);
 ---
 
 <!doctype html>
@@ -13,37 +25,196 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 	<body>
 		<Header />
 		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
-				template serves as a lightweight, minimally-styled starting point for anyone looking to build
-				a personal website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+			<section class="hero surface">
+				<div class="hero-grid">
+					<div class="hero-copy">
+						<p class="eyebrow">MooreThanCode</p>
+						<h1>Jon Moore // Game Developer &amp; World Builder</h1>
+						<p class="hero-lede">
+							I build experiences that balance technical rigor with narrative heart. Every project we ship
+							here is a transparent look at the systems, tools, and design decisions that make it sing.
+						</p>
+						<div class="hero-cta">
+							<a class="button" href="/projects">Explore Projects</a>
+							<a class="button" data-variant="ghost" href="/devlog">Read the Devlog</a>
+						</div>
+					</div>
+					<div class="hero-stats">
+						<div class="stat-card">
+							<span class="stat-label">Experience Lens</span>
+							<strong>Systems-first storytelling for modern players.</strong>
+						</div>
+						<div class="stat-card">
+							<span class="stat-label">Current Focus</span>
+							<strong>AI-driven encounter design &amp; narrative tooling.</strong>
+						</div>
+						<div class="stat-card">
+							<span class="stat-label">Latest Drop</span>
+							{devlogEntries.length ? (
+								<a href={`/devlog/${devlogEntries[0].id}/`}>
+									<strong>{devlogEntries[0].data.title}</strong>
+								</a>
+							) : (
+								<strong>Fresh stories coming soon.</strong>
+							)}
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="featured-projects">
+				<div class="section-heading">
+					<span>Featured Projects</span>
+					<h2>Proof that MooreThanCode is a mindset</h2>
+				</div>
+				<div class="grid grid--projects">
+					{projects.map((project) => (
+						<ProjectCard project={project} />
+					))}
+				</div>
+			</section>
+
+			<section class="devlog surface">
+				<div class="section-heading">
+					<span>Devlog</span>
+					<h2>The process in motion</h2>
+				</div>
+				<ul class="devlog-list">
+					{devlogEntries.map((entry) => (
+						<li>
+							<a href={`/devlog/${entry.id}/`}>
+								<h3>{entry.data.title}</h3>
+								<p>{entry.data.description}</p>
+								<div class="meta">
+									<FormattedDate date={entry.data.pubDate} />
+									<span aria-hidden="true">•</span>
+									<span>Read Case Study</span>
+								</div>
+							</a>
+						</li>
+					))}
+				</ul>
+			</section>
 		</main>
 		<Footer />
 	</body>
 </html>
+
+<style>
+	.hero {
+		margin-top: 2.5rem;
+		padding: 3.5rem;
+		background: radial-gradient(circle at top left, rgba(190, 242, 100, 0.18), transparent 60%),
+			linear-gradient(160deg, rgba(30, 30, 30, 0.95), rgba(18, 18, 18, 0.95));
+	}
+	.hero-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 3rem;
+		align-items: center;
+	}
+	.eyebrow {
+		margin: 0 0 1rem;
+		letter-spacing: 0.5em;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		color: var(--color-muted);
+	}
+	.hero-lede {
+		margin: 1.75rem 0 2.5rem;
+		font-size: 1.1rem;
+		color: rgba(234, 234, 234, 0.92);
+	}
+	.hero-cta {
+		display: flex;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+	.button[data-variant='ghost'] {
+		border: 1px solid rgba(255, 255, 255, 0.16);
+		background: transparent;
+		color: var(--color-text);
+	}
+	.hero-stats {
+		display: grid;
+		gap: 1.5rem;
+	}
+	.stat-card {
+		padding: 1.75rem;
+		border-radius: 20px;
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		backdrop-filter: blur(7px);
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+	.stat-card a {
+		color: inherit;
+	}
+	.stat-label {
+		font-size: 0.75rem;
+		letter-spacing: 0.4em;
+		text-transform: uppercase;
+		color: var(--color-muted);
+	}
+	.featured-projects {
+		margin-top: 5rem;
+	}
+	.devlog {
+		margin-top: 5rem;
+		padding: 3rem;
+	}
+	.devlog-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 1.5rem;
+	}
+	.devlog-list li {
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		border-radius: 20px;
+		background: rgba(30, 30, 30, 0.95);
+		transition: transform 0.2s ease, border 0.2s ease;
+	}
+	.devlog-list a {
+		display: block;
+		padding: 1.75rem 2rem;
+		color: inherit;
+	}
+	.devlog-list h3 {
+		margin-bottom: 0.75rem;
+	}
+	.devlog-list p {
+		margin-bottom: 1rem;
+		color: rgba(234, 234, 234, 0.85);
+	}
+	.devlog-list li:hover,
+	.devlog-list li:focus-within {
+		transform: translateY(-3px);
+		border-color: rgba(190, 242, 100, 0.3);
+	}
+	@media (max-width: 960px) {
+		.hero {
+			padding: 3rem 2.25rem;
+		}
+		.hero-grid {
+			grid-template-columns: 1fr;
+		}
+		.hero-stats {
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		}
+	}
+	@media (max-width: 640px) {
+		.hero {
+			padding: 2.5rem 1.75rem;
+		}
+		.devlog {
+			padding: 2.5rem 1.75rem;
+		}
+		.hero-cta {
+			flex-direction: column;
+		}
+	}
+</style>
